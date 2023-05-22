@@ -12,7 +12,7 @@ include(pico_sdk_import.cmake)
 # Pull in Pico Extras (Optional)
 include(pico_extras_import.cmake)
 
-project(rp2040_setup C CXX ASM)
+project(rp2040-tinyusb-hid-cdc-example C CXX ASM)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -21,9 +21,11 @@ if (PICO_SDK_VERSION_STRING VERSION_LESS "1.3.0")
     message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.3.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
 endif()
 
-set(PROJECT_EXECUTABLE "rp2040-project-template")
+set(PROJECT_EXECUTABLE "rp2040-tinyusb-hid-cdc-example")
 set(PROJECT_PATH ${PROJECT_SOURCE_DIR})
 set(PROJECT_URL_BASE "https://github.com/<author>/<repo>/tree/HEAD")
+
+set(FAMILY_MCUS RP2040)
 
 # Initialize the SDK
 pico_sdk_init()
@@ -37,13 +39,22 @@ add_compile_options(
     -Wno-maybe-uninitialized
 )
 
-FILE(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.c ${CMAKE_SOURCE_DIR}/src/*.cpp)
-add_executable(${PROJECT_EXECUTABLE} ${SOURCES})
+add_executable(${PROJECT_EXECUTABLE})
 
-target_include_directories(${PROJECT_EXECUTABLE} PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/include)
+FILE(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.c ${CMAKE_SOURCE_DIR}/src/*.cpp)
+target_sources(${PROJECT_EXECUTABLE} PUBLIC ${SOURCES})
+
+target_include_directories(${PROJECT_EXECUTABLE} PUBLIC ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/include)
 
 # Pull in common dependencies
-target_link_libraries(${PROJECT_EXECUTABLE} pico_stdlib)
+target_link_libraries(
+    ${PROJECT_EXECUTABLE}
+    pico_stdlib
+    pico_stdio_usb
+    pico_unique_id
+    pico_usb_reset_interface
+    tinyusb_device
+)
 
 # Create map/bin/hex/uf2 file etc.
 pico_add_extra_outputs(${PROJECT_EXECUTABLE})
